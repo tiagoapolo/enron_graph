@@ -2,12 +2,8 @@ import os
 import re
 import json
 import graph
-from itertools import groupby
 from collections import Counter
 
-
-
-# Define a class
 class enronReader:
 
     def __init__(self, basePath, folders):
@@ -18,6 +14,7 @@ class enronReader:
         self.jsonGraph = {}
 
 
+    # Return folders in path
     def __getFolders(self,path):
 
         folders = []
@@ -31,6 +28,7 @@ class enronReader:
 
         return folders
 
+    # Return files in path
     def __getFiles(self, path):
 
         files = []
@@ -44,6 +42,7 @@ class enronReader:
 
         return files
 
+    # Return sender and destinatary in Enron's emails: [FROM, TO]
     def __readData(self, path):
 
         data = []
@@ -80,17 +79,20 @@ class enronReader:
         return data
 
 
+    # Save JSON Graph to path
     def saveGraphToJSON(self, path, filename):
 
         with open(path + '/' + filename + '.json', 'w') as json_file:
             json.dump(self.jsonGraph, json_file)
             json_file.close()
 
+    # Read JSON Graph File and returns it
     def readJSONFile(self, filepath):
         with open(filepath) as json_file:
             return json.load(json_file)
 
 
+    # Create JSON Graph from Enron's email files
     def createJSONGraph(self):
 
         self.jsonGraph = {}
@@ -129,6 +131,7 @@ class enronReader:
         return self.jsonGraph
 
 
+    # Create Graph from JSON data
     def createGraph(self, jsonData=None):
 
         if(jsonData):
@@ -147,15 +150,14 @@ class enronReader:
 
                 self.graph.add_edge(v, jEdgeKey, jEgdes[jEdgeKey])
 
-
+    # Prints connections
     def printConnections(self):
         for v in self.graph:
             for w in v.get_connections():
                 vid = v.get_id()
                 wid = w.get_id()
                 print('( %s , %s, %3d)' % (vid, wid, v.get_weight(w)))
-
-
+    
     def getGraph(self):
         return self.graph
 
