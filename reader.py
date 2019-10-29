@@ -3,6 +3,7 @@ import re
 import json
 import graph
 from collections import Counter
+import time
 
 class enronReader:
 
@@ -48,28 +49,41 @@ class enronReader:
         data = []
         fromLine = None
         toLine = None
+        fIndex = None
+        tIndex = None
 
         f = open(path, "r")
         lines = f.readlines()
 
-        for l in lines:
-            fIndex = l.find('From: ')
-            endIndex = l.find('\n')
-            tIndex = l.find('To: ')
+        # print('\n\n')
+        # print('-------------------------------------------')
+        # print(path)
+        # print('-------------------------------------------')
 
-            if (fromLine != None and toLine != None):
+        for l in lines:
+            
+            endIndex = l.find('\n')
+            fIndex = re.search("^From: [a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", l) # l.find('To: ')
+            tIndex = re.search("^To: (\s?[^\s,]+@[^\s,]+\.[^\s,]+\s?,)*(\s?[^\s,]+@[^\s,]+\.[^\s,]+)$", l) # l.find('From: ')
+            
+            if(fromLine != None and toLine != None):
+                # print('\n\nBreaking!!!!')
+                # print('-------------------------------------------')
+                # print(fromLine)
+                # print(toLine)
+                # print('-------------------------------------------')
+                # time.sleep(.1)
                 break
 
-            elif (fIndex != -1):
-                fromLine = l[fIndex + 6:endIndex]
+            if (fIndex != None):
+                fromLine = l[fIndex.start() + 6 : fIndex.end()]                               
 
-            elif (tIndex != -1):
-                temp = l[tIndex + 4:endIndex]
-
+            if (tIndex != None):                
+                temp = l[tIndex.start() + 4 : tIndex.end()]
                 temp = re.sub(r',\s*', ' ', temp)
-
                 temp = temp.strip().split(' ')
                 toLine = temp
+                
 
         f.close()
 
