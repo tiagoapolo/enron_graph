@@ -14,6 +14,7 @@ class enronReader:
         self.graph = {}
         self.jsonGraph = {}
         self.path = {}
+        self.adjencyMatrix = []
 
     # Return folders in path
     def __getFolders(self, path):
@@ -139,13 +140,28 @@ class enronReader:
 
         self.graph = graph.Graph()
 
+        colunas = list(jGraph.keys())
+        matrix = [[0] * len(colunas)] * len(colunas)
+
         for v in jGraph.keys():
+
             self.graph.add_vertex(v)
 
             jEgdes = dict(Counter(jGraph[v]))
+            linhaIndex = colunas.index(v)
 
             for jEdgeKey in jEgdes.keys():
+
                 self.graph.add_edge(v, jEdgeKey, jEgdes[jEdgeKey])
+
+                try:
+                    idx = colunas.index(jEdgeKey)
+                    matrix[linhaIndex][idx] = 1
+                except:
+                    pass
+
+        self.adjencyMatrix = matrix
+
 
     # Prints connections
     def printConnections(self):
@@ -181,6 +197,9 @@ class enronReader:
 
     def getJSONGraph(self):
         return self.graph
+
+    def getAdjencyMatrix(self):
+        return self.adjencyMatrix
 
     def startSearch(self, node, visited, goal):
 
