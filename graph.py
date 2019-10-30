@@ -19,6 +19,7 @@ class Vertex:
     def get_weight(self, neighbor):
         return self.adjacent[neighbor]
 
+
 class Graph:
 
     def __init__(self):
@@ -41,7 +42,7 @@ class Graph:
         else:
             return None
 
-    def add_edge(self, frm, to, cost = 0):
+    def add_edge(self, frm, to, cost=0):
         if frm not in self.vert_dict:
             self.add_vertex(frm)
         if to not in self.vert_dict:
