@@ -5,6 +5,7 @@ import graph
 from collections import Counter
 import time
 
+
 class enronReader:
 
     def __init__(self, basePath, folders):
@@ -13,10 +14,10 @@ class enronReader:
         self.folders = folders
         self.graph = {}
         self.jsonGraph = {}
-
+        self.path = {}
 
     # Return folders in path
-    def __getFolders(self,path):
+    def __getFolders(self, path):
 
         folders = []
 
@@ -92,7 +93,6 @@ class enronReader:
 
         return data
 
-
     # Save JSON Graph to path
     def saveGraphToJSON(self, path, filename):
 
@@ -105,7 +105,6 @@ class enronReader:
         with open(filepath) as json_file:
             return json.load(json_file)
 
-
     # Create JSON Graph from Enron's email files
     def createJSONGraph(self):
 
@@ -116,14 +115,14 @@ class enronReader:
         for email in emailFolders:
             for sentFolder in self.folders:
 
-                files = self.__getFiles(self.basePath+email+'/'+sentFolder+'/')
+                files = self.__getFiles(self.basePath + email + '/' + sentFolder + '/')
 
-                if(len(files)):
+                if (len(files)):
                     for fileData in files:
 
-                        emailFileData = self.__readData(self.basePath+email+'/'+sentFolder+'/'+fileData)
+                        emailFileData = self.__readData(self.basePath + email + '/' + sentFolder + '/' + fileData)
 
-                        if(len(emailFileData)):
+                        if (len(emailFileData)):
 
                             if emailFileData[0] not in self.jsonGraph:
 
@@ -139,16 +138,15 @@ class enronReader:
                                 if not isinstance(emailFileData[1], list):
                                     self.jsonGraph[emailFileData[0]].append(emailFileData[1])
                                 else:
-                                    self.jsonGraph[emailFileData[0]] = self.jsonGraph[emailFileData[0]] + emailFileData[1]
-
+                                    self.jsonGraph[emailFileData[0]] = self.jsonGraph[emailFileData[0]] + emailFileData[
+                                        1]
 
         return self.jsonGraph
-
 
     # Create Graph from JSON data
     def createGraph(self, jsonData=None):
 
-        if(jsonData):
+        if (jsonData):
             jGraph = jsonData
         else:
             jGraph = self.createJSONGraph()
@@ -161,19 +159,64 @@ class enronReader:
             jEgdes = dict(Counter(jGraph[v]))
 
             for jEdgeKey in jEgdes.keys():
-
                 self.graph.add_edge(v, jEdgeKey, jEgdes[jEdgeKey])
 
     # Prints connections
     def printConnections(self):
         for v in self.graph:
+            vid = v.get_id()
+            print('[ %s ]' % vid)
             for w in v.get_connections():
-                vid = v.get_id()
                 wid = w.get_id()
-                print('( %s , %s, %3d)' % (vid, wid, v.get_weight(w)))
-    
+                print('---------------> [ %s, %3d]' % (wid, v.get_weight(w)))
+
+    def getOrderedByOutNumber(self):
+        dict = {}
+        for v in self.graph:
+            vFrom = v.get_id()
+            dict[vFrom] = len(v.get_connections())
+
+        dict = sorted(dict.items(), key=lambda kv: kv[1], reverse=True)
+
+        return list(dict)[0:20]
+
+    def getOrderedByInNumber(self):
+        dict = {}
+        for v in self.graph:
+            for w in v.get_connections():
+                dict[w.get_id()] = 0 if dict.get(w.get_id()) is None else dict[w.get_id()] + 1
+
+        dict = sorted(dict.items(), key=lambda kv: kv[1], reverse=True)
+
+        return list(dict)[0:20]
+
     def getGraph(self):
         return self.graph
 
     def getJSONGraph(self):
         return self.graph
+
+    def startSearch(self, node, visited, goal):
+
+        self.path[node] = True
+
+        # print(node + "==" + goal)
+        if node == goal:
+            self.path[goal] = True
+            return self.path
+
+        visited[node] = True
+
+        for i in self.graph.get_vertex(node).get_connections():
+            if not visited.get(i.id):
+                self.startSearch(i.id, visited, goal)
+
+    def depthFirstSearch(self, start, goal):
+
+        visited = {}
+
+        for vertice in self.graph.get_vertices():
+            visited[vertice] = False
+
+        self.startSearch(start, visited, goal)
+        print(self.path)
